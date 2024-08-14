@@ -1,240 +1,294 @@
 const nono = document.getElementById("nono");
 const ctx = nono.getContext("2d");
+const keys = {
+    key1: "KeyQ",
+    key2: "KeyW",
+    key3: "KeyO",
+    key4: "KeyP",
+}
 let timer = 0;
+let loop;
+let hit = 0;
 let miss = 0;
-let score = 0;
-const visible = [];
-const laneColors = [
-    "rgba(0, 0, 255, 0.7)",
-    "rgba(100, 100, 255, 0.7)",
-    "rgba(100, 100, 255, 0.7)",
-    "rgba(0, 0, 255, 0.7)",
-]
-const lane = [
-    [],
-    [],
-    [],
-    [],
-]
-const speed = 10;
+let resArr = [];
 
-class NonoBonker {
-    constructor(lane, key, highlightColor) {
+class Lanes {
+    constructor(lane) {
         this.lane = lane;
-        this.xPos = (lane - 1) * 100 + 50;
-        this.yPos = 800 - 50;
-        this.radius = 30;
-        this.bind = key;
-        this.pressing = false;
-        this.highlightColor = highlightColor;
-    }
-    check = () => {
-        console.log([...visible]);
-        console.log(lane[this.lane - 1][0]);
-        if (this.pressing) {
-            if (visible.includes(lane[this.lane - 1][0])) {
-                if (Math.abs(lane[this.lane - 1][0].yPos - this.yPos) > 100) {
-                    return null
-                }
-                if (Math.abs(lane[this.lane - 1][0].yPos - this.yPos) <= 100 && Math.abs(lane[this.lane - 1][0].yPos - this.yPos) > 50) {
-                    miss++;
-                    console.log("miss")
-                    score -= 500;
-                    return null
-                }
-                if (Math.abs(lane[this.lane - 1][0].yPos - this.yPos) <= 50 && Math.abs(lane[this.lane - 1][0].yPos - this.yPos) > 40) {
-                    score += 100;
-                    visible.splice(0, 1);
-                    lane[this.lane - 1].splice(0, 1);
-                    lane[this.lane - 1][0].gone = true;
-                    return null
-                }
-                if (Math.abs(lane[this.lane - 1][0].yPos - this.yPos) <= 40 && Math.abs(lane[this.lane - 1][0].yPos - this.yPos) > 30) {
-                    score += 200;
-                    visible.splice(0, 1);
-                    lane[this.lane - 1].splice(0, 1);
-                    lane[this.lane - 1][0].gone = true;
-                    return null
-                }
-                if (Math.abs(lane[this.lane - 1][0].yPos - this.yPos) <= 30 && Math.abs(lane[this.lane - 1][0].yPos - this.yPos) > 20) {
-                    score += 300;
-                    visible.splice(0, 1);
-                    lane[this.lane - 1].splice(0, 1);
-                    lane[this.lane - 1][0].gone = true;
-                    return null
-                }
-                if (Math.abs(lane[this.lane - 1][0].yPos - this.yPos) <= 20 && Math.abs(lane[this.lane - 1][0].yPos - this.yPos) > 10) {
-                    score += 500;
-                    visible.splice(0, 1);
-                    lane[this.lane - 1].splice(0, 1);
-                    lane[this.lane - 1][0].gone = true;
-                    return null
-                }
-                if (Math.abs(lane[this.lane - 1][0].yPos - this.yPos) <= 10) {
-                    score += 1000;
-                    visible.splice(0, 1);
-                    lane[this.lane - 1].splice(0, 1);
-                    lane[this.lane - 1][0].gone = true;
-                    return null
-                }
-            }
-        }
+        this.xPos = lane * 100 - 50;
     }
     draw = () => {
-        // draw bonkers
         ctx.beginPath();
-        if (this.pressing) {
-            ctx.fillStyle = this.highlightColor;
-            ctx.strokeStyle = this.highlightColor;
-        } else {
-            ctx.fillStyle = "rgba(0, 0, 0, 0)";
-            ctx.strokeStyle = "black";
-        }
+        ctx.strokeStyle = "black";
         ctx.lineWidth = 1;
-        ctx.arc(this.xPos, this.yPos, this.radius, 0, 2 * Math.PI);
-        ctx.stroke();
-        ctx.fill();
-        // draw lines
-        ctx.beginPath();
-        ctx.strokeStyle = "grey"
-        ctx.moveTo(this.xPos, this.yPos - this.radius);
-        ctx.lineTo(this.xPos, 0);
-        ctx.moveTo(this.xPos, this.yPos + this.radius);
+        ctx.moveTo(this.xPos, 0);
         ctx.lineTo(this.xPos, 800);
         ctx.stroke();
     }
 }
 
-class Nono {
-    // constructor(lane, sec, hold) {
-    constructor(lane, sec) {
+class NoNos {
+    constructor(lane, index) {
         this.lane = lane;
-        this.yPos = 800 - 50 - (sec * 60 * speed)
-        this.xPos = (lane - 1) * 100 + 50
-        this.radius = 30
-        // this.holdPos = 800 - 50 - (sec * 60 * speed) - (hold * 60 * speed)
-        this.gone = false;
-    }
-    update = () => {
-        if (this.gone) {
-            this.yPos = 1200
-            return null;
-        }
-        // if (this.holdPos - this.radius > 800) {
-        if (this.yPos - this.radius > 800) {
-            miss++;
-            visible.splice(0, 1);
-            lane[this.lane - 1].splice(0, 1);
-            console.log("miss")
-            this.gone = true;
-        }
-        this.yPos += speed
-        // this.holdPos += speed
+        this.xPos = lane * 100 - 50;
+        this.radius = 30;
+        this.yPos = 800 - 830;
+        this.index = index;
     }
     draw = () => {
         ctx.beginPath();
+        ctx.strokeStyle = "black";
+        ctx.fillStyle = "white";
         ctx.lineWidth = 1;
         ctx.arc(this.xPos, this.yPos, this.radius, 0, 2 * Math.PI);
+        ctx.fill()
         ctx.stroke();
-        // ctx.beginPath();
-        // ctx.lineWidth = 1;
-        // ctx.arc(this.xPos, this.holdPos, this.radius, 0, 2 * Math.PI);
-        // ctx.stroke();
-        // ctx.beginPath();
-        // ctx.lineWidth = 1;
-        // ctx.moveTo(this.xPos - this.radius, this.yPos);
-        // ctx.lineTo(this.xPos - this.radius, this.holdPos);
-        // ctx.moveTo(this.xPos + this.radius, this.yPos);
-        // ctx.lineTo(this.xPos + this.radius, this.holdPos);
-        // ctx.stroke();
+    }
+    update = () => {
+        this.yPos += 7;
+        // console.log(this);
+        // console.log(this.yPos);
+        // console.log(this.index)
+        if (this.yPos - this.radius >= 800) {
+            let temp = this.index
+            this.index--;
+            while (temp > 0) {
+                resArr.push(nonos.shift());
+                temp--;
+            }
+
+            console.log(resArr);
+            nonos.shift();
+            while (resArr.length > 0) {
+                nonos.unshift(resArr.pop());
+            }
+            console.log(nonos);
+            miss++;
+        }
     }
 }
 
-const nonoBonkers = [
-    new NonoBonker(1, "KeyQ", laneColors[0]),
-    new NonoBonker(2, "KeyW", laneColors[1]),
-    new NonoBonker(3, "KeyO", laneColors[2]),
-    new NonoBonker(4, "KeyP", laneColors[3]),
-];
+const player = {
+    bind: {
+        key1: false,
+        key2: false,
+        key3: false,
+        key4: false,
+    },
+    radius: 30,
+    highlight: {
+        key1: "rgb(000, 100, 255)",
+        key2: "rgb(000, 255, 255)",
+        key3: "rgb(000, 255, 255)",
+        key4: "rgb(000, 100, 255)",
+    },
+    check: () => {
+        if (player.bind.key1) {
+            for (let i = 0; i < nonos.length; i++) {
+                if (nonos[i].lane == 1) {
+                    if (
+                        nonos[i].yPos + nonos[i].radius >= 800 - 50 - player.radius &&
+                        nonos[i].yPos - nonos[i].radius <= 800 - 50 + player.radius
+                    ) {
+                        let temp = i
+                        while (temp > 0) {
+                            resArr.push(nonos.shift());
+                            temp--;
+                        }
+                        nonos.shift();
+                        while (resArr.length > 0) {
+                            nonos.unshift(resArr.pop());
+                        }
+                        hit++;
+                        break;
+                    }
+                }
+            }
+        }
+        if (player.bind.key2) {
+            for (let i = 0; i < nonos.length; i++) {
+                if (nonos[i].lane == 2) {
+                    if (
+                        nonos[i].yPos + nonos[i].radius >= 800 - 50 - player.radius &&
+                        nonos[i].yPos - nonos[i].radius <= 800 - 50 + player.radius
+                    ) {
+                        let temp = i
+                        while (temp > 0) {
+                            resArr.push(nonos.shift());
+                            temp--;
+                        }
+                        nonos.shift();
+                        while (resArr.length > 0) {
+                            nonos.unshift(resArr.pop());
+                        }
+                        hit++;
+                        break;
+                    }
+                }
+            }
+        }
+        if (player.bind.key3) {
+            for (let i = 0; i < nonos.length; i++) {
+                if (nonos[i].lane == 3) {
+                    if (
+                        nonos[i].yPos + nonos[i].radius >= 800 - 50 - player.radius &&
+                        nonos[i].yPos - nonos[i].radius <= 800 - 50 + player.radius
+                    ) {
+                        let temp = i
+                        while (temp > 0) {
+                            resArr.push(nonos.shift());
+                            temp--;
+                        }
+                        nonos.shift();
+                        while (resArr.length > 0) {
+                            nonos.unshift(resArr.pop());
+                        }
+                        hit++;
+                        break;
+                    }
+                }
+            }
+        }
+        if (player.bind.key4) {
+            for (let i = 0; i < nonos.length; i++) {
+                if (nonos[i].lane == 4) {
+                    if (
+                        nonos[i].yPos + nonos[i].radius >= 800 - 50 - player.radius &&
+                        nonos[i].yPos - nonos[i].radius <= 800 - 50 + player.radius
+                    ) {
+                        let temp = i
+                        while (temp > 0) {
+                            resArr.push(nonos.shift());
+                            temp--;
+                        }
+                        nonos.shift();
+                        while (resArr.length > 0) {
+                            nonos.unshift(resArr.pop());
+                        }
+                        hit++;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    ,
+    draw: () => {
+        ctx.beginPath();
+        if (player.bind.key1) {
+            ctx.fillStyle = player.highlight.key1
+        } else {
+            ctx.fillStyle = "white"
+        }
+        ctx.strokeStyle = "black"
+        ctx.arc(50, 800 - 50, player.radius, 0, 2 * Math.PI);
+        ctx.fill()
+        ctx.stroke();
+        ctx.beginPath();
+        if (player.bind.key2) {
+            ctx.fillStyle = player.highlight.key2
+        } else {
+            ctx.fillStyle = "white"
+        }
+        ctx.strokeStyle = "black"
+        ctx.arc(150, 800 - 50, player.radius, 0, 2 * Math.PI);
+        ctx.fill()
+        ctx.stroke();
+        ctx.beginPath();
+        if (player.bind.key3) {
+            ctx.fillStyle = player.highlight.key3
+        } else {
+            ctx.fillStyle = "white"
+        }
+        ctx.strokeStyle = "black"
+        ctx.arc(250, 800 - 50, player.radius, 0, 2 * Math.PI);
+        ctx.fill()
+        ctx.stroke();
+        ctx.beginPath();
+        if (player.bind.key4) {
+            ctx.fillStyle = player.highlight.key4
+        } else {
+            ctx.fillStyle = "white"
+        }
+        ctx.strokeStyle = "black"
+        ctx.arc(350, 800 - 50, player.radius, 0, 2 * Math.PI);
+        ctx.fill()
+        ctx.stroke();
+    }
+}
 
-const nonos = [
-    // first section
-    new Nono(1, 1),//, 1),
-    new Nono(2, 1),//0.5),
-    new Nono(3, 1),//0.5),
-    new Nono(2, 1.5),//0.5),
-    new Nono(3, 1.5),//0.5),
-    new Nono(4, 1),//, 1),
+window.addEventListener("keypress", (event) => {
+    switch (event.code) {
+        case keys.key1:
+            player.bind.key1 = true
+            break;
+        case keys.key2:
+            player.bind.key2 = true
+            break;
+        case keys.key3:
+            player.bind.key3 = true
+            break;
+        case keys.key4:
+            player.bind.key4 = true
+            break;
+    }
+})
 
-    // second section
-    new Nono(1, 3),//, 0),
-    new Nono(2, 3.1),//, 0),
-    new Nono(3, 3.2),//, 0),
-    new Nono(4, 3.3),//, 0),
-    new Nono(3, 3.4),//, 0),
-    new Nono(2, 3.5),//, 0),
-    new Nono(1, 3 + 0.6),//, 0),
-    new Nono(2, 3.1 + 0.6),//, 0),
-    new Nono(3, 3.2 + 0.6),//, 0),
-    new Nono(4, 3.3 + 0.6),//, 0),
-    new Nono(3, 3.4 + 0.6),//, 0),
-    new Nono(2, 3.5 + 0.6),//, 0),
-    new Nono(1, 3 + 1.2),//, 0),
-    new Nono(2, 3.1 + 1.2),//, 0),
-    new Nono(3, 3.2 + 1.2),//, 0),
-    new Nono(4, 3.3 + 1.2),//, 0),
-    new Nono(3, 3.4 + 1.2),//, 0),
-    new Nono(2, 3.5 + 1.2),//, 0),
-    new Nono(1, 3 + 1.8),//, 0),
-    new Nono(2, 3.1 + 1.8),//, 0),
-    new Nono(3, 3.2 + 1.8),//, 0),
-    new Nono(4, 3.3 + 1.8),//, 0),
-    new Nono(3, 3.4 + 1.8),//, 0),
-    new Nono(2, 3.5 + 1.8),//, 0),
-    new Nono(1, 3 + 2.4),//, 0),
+const lanes = [
+    new Lanes(1),
+    new Lanes(2),
+    new Lanes(3),
+    new Lanes(4),
 ]
 
-window.addEventListener("keydown", (event) => {
-    for (i = 0; i < nonoBonkers.length; i++) {
-        if (event.code == nonoBonkers[i].bind) {
-            nonoBonkers[i].pressing = true;
-        }
-    }
-})
-window.addEventListener("keyup", (event) => {
-    for (i = 0; i < nonoBonkers.length; i++) {
-        if (event.code == nonoBonkers[i].bind) {
-            nonoBonkers[i].pressing = false;
-        }
-    }
-})
+const nonos = [
+]
+
+function randomLane() {
+    const random = Math.random();
+    if (random < 0.25) return 1;
+    else if (random < 0.5) return 2;
+    else if (random < 0.75) return 3;
+    else if (random <= 1) return 4;
+}
+
 
 function init() {
-    for (let i = 0; i < nonoBonkers.length; i++) {
-        nonoBonkers[i].draw();
+    for (i = 0; i < lanes.length; i++) {
+        lanes[i].draw();
     }
-    for (let i = 0; i < nonos.length; i++) {
+    for (i = 0; i < nonos.length; i++) {
         nonos[i].draw();
-        lane[nonos[i].lane - 1].push(nonos[i]);
     }
-    setInterval(requestAnimationFrame, 1000 / 60, update)
+    player.draw();
+    loop = setInterval(update, 1000 / 60);
 }
 
 function update() {
-    ctx.clearRect(0, 0, 400, 800);
-    for (let i = 0; i < nonoBonkers.length; i++) {
-        nonoBonkers[i].draw();
-        nonoBonkers[i].check();
+    ctx.clearRect(0, 0, 400, 800)
+    for (let i = 0; i < lanes.length; i++) {
+        lanes[i].draw();
     }
     for (let i = 0; i < nonos.length; i++) {
         nonos[i].update();
-        if (nonos[i].yPos <= 800 && nonos[i].yPos >= 0 && !visible.includes(nonos[i])) {
-            visible.push(nonos[i]);
-        }
         nonos[i].draw();
     }
+    player.check();
+    player.draw();
+    player.bind.key1 = false;
+    player.bind.key2 = false;
+    player.bind.key3 = false;
+    player.bind.key4 = false;
+    if (timer % (60 * 0.2) === 0) {
+        nonos.push(new NoNos(randomLane(), nonos.length));
+    }
     timer++;
-    ctx.fillStyle = "red"
+    ctx.font = "24px Arial"
+    ctx.fillStyle = "red";
+    ctx.fillText(hit + " hit", 10, 30);
+    ctx.fillText(miss + " missed", 10, 80);
+    // ctx.fillStyle = "red"
+    // ctx.fillRect(0, 700, 100, 100);
 }
 
 window.onload = init();
