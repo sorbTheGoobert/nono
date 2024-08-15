@@ -12,6 +12,12 @@ let hit = 0;
 let miss = 0;
 let resArr = [];
 
+//audio (what have i done)
+const missSFX = new Audio("./assets/HOLYCRAPV1.wav");
+const hitSFX = new Audio("./assets/happyv1wow.wav");
+const beat = new Audio("./assets/hollup.wav");
+let turnedOffSFX = true
+
 class Lanes {
     constructor(lane) {
         this.lane = lane;
@@ -28,12 +34,11 @@ class Lanes {
 }
 
 class NoNos {
-    constructor(lane, index) {
+    constructor(lane) {
         this.lane = lane;
         this.xPos = lane * 100 - 50;
         this.radius = 30;
         this.yPos = 800 - 830;
-        this.index = index;
     }
     draw = () => {
         ctx.beginPath();
@@ -49,21 +54,21 @@ class NoNos {
         // console.log(this);
         // console.log(this.yPos);
         // console.log(this.index)
-        if (this.yPos - this.radius >= 800) {
-            let temp = this.index
-            this.index--;
+        const index = findNoNo();
+        if(index !== null){
+            let temp = index
             while (temp > 0) {
                 resArr.push(nonos.shift());
                 temp--;
             }
-
-            console.log(resArr);
             nonos.shift();
             while (resArr.length > 0) {
                 nonos.unshift(resArr.pop());
             }
-            console.log(nonos);
             miss++;
+            if(!turnedOffSFX){
+                missSFX.play();
+            }
         }
     }
 }
@@ -74,6 +79,10 @@ const player = {
         key2: false,
         key3: false,
         key4: false,
+        key1hold: false,
+        key2hold: false,
+        key3hold: false,
+        key4hold: false,
     },
     radius: 30,
     highlight: {
@@ -100,6 +109,9 @@ const player = {
                             nonos.unshift(resArr.pop());
                         }
                         hit++;
+                        if(!turnedOffSFX){
+                            hitSFX.play();
+                        }
                         break;
                     }
                 }
@@ -122,6 +134,9 @@ const player = {
                             nonos.unshift(resArr.pop());
                         }
                         hit++;
+                        if(!turnedOffSFX){
+                            hitSFX.play();
+                        }
                         break;
                     }
                 }
@@ -144,6 +159,9 @@ const player = {
                             nonos.unshift(resArr.pop());
                         }
                         hit++;
+                        if(!turnedOffSFX){
+                            hitSFX.play();
+                        }
                         break;
                     }
                 }
@@ -166,6 +184,9 @@ const player = {
                             nonos.unshift(resArr.pop());
                         }
                         hit++;
+                        if(!turnedOffSFX){
+                            hitSFX.play();
+                        }
                         break;
                     }
                 }
@@ -175,7 +196,7 @@ const player = {
     ,
     draw: () => {
         ctx.beginPath();
-        if (player.bind.key1) {
+        if (player.bind.key1hold) {
             ctx.fillStyle = player.highlight.key1
         } else {
             ctx.fillStyle = "white"
@@ -185,7 +206,7 @@ const player = {
         ctx.fill()
         ctx.stroke();
         ctx.beginPath();
-        if (player.bind.key2) {
+        if (player.bind.key2hold) {
             ctx.fillStyle = player.highlight.key2
         } else {
             ctx.fillStyle = "white"
@@ -195,7 +216,7 @@ const player = {
         ctx.fill()
         ctx.stroke();
         ctx.beginPath();
-        if (player.bind.key3) {
+        if (player.bind.key3hold) {
             ctx.fillStyle = player.highlight.key3
         } else {
             ctx.fillStyle = "white"
@@ -205,7 +226,7 @@ const player = {
         ctx.fill()
         ctx.stroke();
         ctx.beginPath();
-        if (player.bind.key4) {
+        if (player.bind.key4hold) {
             ctx.fillStyle = player.highlight.key4
         } else {
             ctx.fillStyle = "white"
@@ -233,6 +254,38 @@ window.addEventListener("keypress", (event) => {
             break;
     }
 })
+window.addEventListener("keydown", (event) => {
+    switch (event.code) {
+        case keys.key1:
+            player.bind.key1hold = true
+            break;
+        case keys.key2:
+            player.bind.key2hold = true
+            break;
+        case keys.key3:
+            player.bind.key3hold = true
+            break;
+        case keys.key4:
+            player.bind.key4hold = true
+            break;
+    }
+})
+window.addEventListener("keyup", (event) => {
+    switch (event.code) {
+        case keys.key1:
+            player.bind.key1hold = false
+            break;
+        case keys.key2:
+            player.bind.key2hold = false
+            break;
+        case keys.key3:
+            player.bind.key3hold = false
+            break;
+        case keys.key4:
+            player.bind.key4hold = false
+            break;
+    }
+})
 
 const lanes = [
     new Lanes(1),
@@ -243,6 +296,15 @@ const lanes = [
 
 const nonos = [
 ]
+
+function findNoNo() {
+    for(let i = 0; i < nonos.length; i++){
+        if(nonos[i].yPos - nonos[i].radius >= 800) {
+            return i;
+        }
+    }
+    return null;
+}
 
 function randomLane() {
     const random = Math.random();
@@ -280,7 +342,10 @@ function update() {
     player.bind.key3 = false;
     player.bind.key4 = false;
     if (timer % (60 * 0.2) === 0) {
-        nonos.push(new NoNos(randomLane(), nonos.length));
+        nonos.push(new NoNos(randomLane()));
+        if(!turnedOffSFX){
+            beat.play();
+        }
     }
     timer++;
     ctx.font = "24px Arial"
